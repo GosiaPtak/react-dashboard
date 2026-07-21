@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "Bash(git --version)",
+      "Bash(command -v gh)",
+      "Bash(brew list *)",
+      "Bash(command -v brew)",
+      "Bash(brew install *)"
+    ]
+  }
+}
