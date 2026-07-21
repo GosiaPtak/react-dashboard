@@ -2,20 +2,17 @@ import { useState } from 'react';
 import './App.css';
 import Sidebar, { type NavItem } from './components/Sidebar';
 import StatCard from './components/StatCard';
-
-// Fake data for now — Phase 2 replaces this with a real fetch() call.
-const STATS = [
-  { label: 'Total Revenue', value: '$48,290', trend: 12 },
-  { label: 'Active Users', value: '2,431', trend: 4 },
-  { label: 'Churn Rate', value: '3.2%', trend: -1.5 },
-  { label: 'Open Tickets', value: '18', trend: -8 },
-];
+import { useStats } from './hooks/useStats';
 
 export default function App() {
   // useState gives us a piece of memory that survives re-renders.
   // `active` is the current value, `setActive` is the ONLY way to change it —
   // calling setActive tells React "re-render me with this new value".
   const [active, setActive] = useState<NavItem>('Overview');
+
+  // All the fetch-related state (data/loading/error) is extracted into this
+  // one hook call. App doesn't know or care HOW the data is fetched.
+  const { stats, loading, error } = useStats();
 
   return (
     <div className="app">
@@ -26,11 +23,16 @@ export default function App() {
           <h2>{active}</h2>
         </header>
 
-        <section className="stats-grid">
-          {STATS.map((stat) => (
-            <StatCard key={stat.label} {...stat} />
-          ))}
-        </section>
+        {loading && <p className="status">Loading stats…</p>}
+        {error && <p className="status error">Couldn't load stats: {error}</p>}
+
+        {!loading && !error && (
+          <section className="stats-grid">
+            {stats.map((stat) => (
+              <StatCard key={stat.label} {...stat} />
+            ))}
+          </section>
+        )}
       </main>
     </div>
   );

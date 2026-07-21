@@ -59,6 +59,16 @@
   font-size: 22px;
 }
 
+/* --- Loading / error status --- */
+.status {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.status.error {
+  color: #dc2626;
+}
+
 /* --- Stat cards --- */
 .stats-grid {
   display: grid;
