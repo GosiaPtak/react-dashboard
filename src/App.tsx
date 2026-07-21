@@ -1,39 +1,44 @@
 import { useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
-import Sidebar, { type NavItem } from './components/Sidebar';
-import StatCard from './components/StatCard';
-import { useStats } from './hooks/useStats';
+import ProtectedRoute from './components/ProtectedRoute';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
+import Settings from './pages/Settings';
 
 export default function App() {
-  // useState gives us a piece of memory that survives re-renders.
-  // `active` is the current value, `setActive` is the ONLY way to change it —
-  // calling setActive tells React "re-render me with this new value".
-  const [active, setActive] = useState<NavItem>('Overview');
-
-  // All the fetch-related state (data/loading/error) is extracted into this
-  // one hook call. App doesn't know or care HOW the data is fetched.
-  const { stats, loading, error } = useStats();
+  // Stand-in for real auth (Phase 6 replaces this with an actual token
+  // check). Notice it has to be passed down manually to both <Login> and
+  // every <ProtectedRoute> below — that manual wiring is exactly the
+  // prop-drilling pain Phase 5 (Context/Zustand) will solve.
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
-    <div className="app">
-      <Sidebar active={active} onSelect={setActive} />
-
-      <main className="main">
-        <header className="header">
-          <h2>{active}</h2>
-        </header>
-
-        {loading && <p className="status">Loading stats…</p>}
-        {error && <p className="status error">Couldn't load stats: {error}</p>}
-
-        {!loading && !error && (
-          <section className="stats-grid">
-            {stats.map((stat) => (
-              <StatCard key={stat.label} {...stat} />
-            ))}
-          </section>
-        )}
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        {/* Catch-all — matches anything not matched above, same idea as
+            Angular's wildcard `path: '**'` route. */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
